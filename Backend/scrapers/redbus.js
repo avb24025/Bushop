@@ -26,14 +26,14 @@ async function scrapeRedBus(fromCity, toCity, travelDate) {
         // 1. Origin Selection
         console.log(`Setting origin: ${fromCity}`);
         await page.type('#srcinput', fromCity, { delay: 50 });
-        await page.waitForTimeout(2000); 
+        await page.waitForTimeout(20000); 
         await page.keyboard.press('ArrowDown');
         await page.keyboard.press('Enter');
 
         // 2. Destination Selection
         console.log(`Setting destination: ${toCity}`);
         await page.type('#destinput', toCity, { delay: 50 });
-        await page.waitForTimeout(2000);
+        await page.waitForTimeout(20000);
         await page.keyboard.press('ArrowDown');
         await page.keyboard.press('Enter');
         

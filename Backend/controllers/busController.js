@@ -1,5 +1,7 @@
 import redbus from '../scrapers/redbus.js';
 import abhibus from '../scrapers/abhibus.js';
+import travelyaari from '../scrapers/travelyaari.js';
+import scrapeIxigo from '../scrapers/ixigo.js';
 
 export default async function busController(req, res) {
     // Use body params if available, otherwise fallback to testArgs
@@ -21,23 +23,25 @@ export default async function busController(req, res) {
     };
 
     // Execute scrapers in parallel but handle errors individually
-    const [redbusResults, abhibusResults] = await Promise.all([
+    const [redbusResults, abhibusResults, scrapeIxigoResults] = await Promise.all([
         runScraper(redbus, 'RedBus', source, destination, date),
-        runScraper(abhibus, 'AbhiBus', source, destination, date)
+        runScraper(abhibus, 'AbhiBus', source, destination, date),
+        runScraper(scrapeIxigo, 'Ixigo', source, destination, date)
     ]);
 
     // Store categorized by platform
     const categorizedBuses = {
         redbus: redbusResults,
         abhibus: abhibusResults,
+        ixigo: scrapeIxigoResults,
         // travelyaari: [],
         // zingbus: []
     };
 
     // Create a combined flat list for easy UI rendering
-    const allBuses = [...redbusResults, ...abhibusResults];
+    const allBuses = [...redbusResults, ...abhibusResults, ...scrapeIxigoResults];
 
-    console.log(`Results: RedBus(${redbusResults.length}), AbhiBus(${abhibusResults.length})`);
+    console.log(`Results: RedBus(${redbusResults.length}), AbhiBus(${abhibusResults.length}), Ixigo(${scrapeIxigoResults.length})`);
 
     // Return both grouped and flat data
     res.json({
@@ -46,7 +50,8 @@ export default async function busController(req, res) {
             total: allBuses.length,
             platforms: {
                 redbus: redbusResults.length,
-                abhibus: abhibusResults.length
+                abhibus: abhibusResults.length,
+                ixigo: scrapeIxigoResults.length
             }
         },
         data: categorizedBuses, // Organized by platform

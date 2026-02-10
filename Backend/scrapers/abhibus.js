@@ -57,7 +57,6 @@ async function scrapeAbhiBus(fromCity, toCity, travelDate) {
         await page.keyboard.press('Enter');
 
 
-        // 3. Date Selection ("15 February 2026")
        // 3. Date Selection (Example: travelDate = "15 February 2026")
        const [day, monthName, year] = travelDate.split(' ');
     
