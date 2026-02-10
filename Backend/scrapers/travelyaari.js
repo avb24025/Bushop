@@ -1,3 +1,3 @@
-export default function busController(req,res){
-    res.send('Bus route');
-}
+// export default function busController(req,res){
+//     res.send('Bus route');
+// }

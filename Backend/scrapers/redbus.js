@@ -10,7 +10,10 @@ async function scrapeRedBus(fromCity, toCity, travelDate) {
         args: [
             '--disable-blink-features=AutomationControlled', // Extra stealth
             '--no-sandbox', 
-            '--disable-setuid-sandbox'
+            '--disable-setuid-sandbox',
+            '--disable-http2',
+            '--disable-blink-features=AutomationControlled',
+            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
         ]
      }); 
     const context = await browser.newContext();
@@ -65,7 +68,7 @@ async function scrapeRedBus(fromCity, toCity, travelDate) {
 
         // 5. CHECK FOR "NO BUSES FOUND"
         // We wait a moment for the page to decide if there are buses or an error
-        await page.waitForTimeout(2000); 
+        await page.waitForTimeout(10000); 
         const noBusesFound = await page.$('.titleSection___4069e8');
         
         if (noBusesFound) {
@@ -105,7 +108,6 @@ async function scrapeRedBus(fromCity, toCity, travelDate) {
             });
         });
 
-        console.log(`✨ Successfully found ${busResults.length} buses.`);
         return busResults;
 
     } catch (err) {
@@ -116,7 +118,5 @@ async function scrapeRedBus(fromCity, toCity, travelDate) {
     }
 }
 
-// Example Test Run
-// scrapeRedBus('Khed', 'Pune', '10 February 2026').then(console.log);
 
 export default scrapeRedBus;

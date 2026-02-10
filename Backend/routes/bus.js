@@ -3,7 +3,7 @@ import busController from '../controllers/busController.js';
 
 const router=express.Router();
 
-router.get('/bus',busController);
+router.post('/bus',busController);
 
 export default router;
 
