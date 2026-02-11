@@ -42,8 +42,32 @@ import './App.css'
 
   async function handleSubmit(e) {
     e.preventDefault()
-    setLoading(true)
     setError(null)
+
+    // Validate required fields
+    if (!source.trim()) {
+      setError('Please enter a source city')
+      return
+    }
+    if (!destination.trim()) {
+      setError('Please enter a destination city')
+      return
+    }
+    if (!date.trim()) {
+      setError('Please select a travel date')
+      return
+    }
+
+    // Validate date is >= today
+    const selectedDate = new Date(rawDate)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    if (selectedDate < today) {
+      setError('Please select a date today or in the future')
+      return
+    }
+
+    setLoading(true)
     setResults(null)
 
     try {
@@ -85,6 +109,20 @@ import './App.css'
     }
   }
 
+  function getPlatformURL(platform, bus) {
+    const baseURL = {
+      'ixigo': 'https://bus.ixigo.com/',
+      'abhibus': 'https://www.abhibus.com/',
+      'redbus': 'https://www.redbus.in/'
+    }
+    return baseURL[platform] || baseURL['ixigo']
+  }
+
+  function handleBusClick(platform) {
+    const url = getPlatformURL(platform)
+    window.open(url, '_blank')
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 to-white flex items-center justify-center p-6">
       <div className="w-full max-w-4xl">
@@ -103,6 +141,7 @@ import './App.css'
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <input
               aria-label="source"
+              required
               className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-gray-50 hover:bg-white transition"
               placeholder="Source (e.g. Khed)"
               value={source}
@@ -111,6 +150,7 @@ import './App.css'
 
             <input
               aria-label="destination"
+              required
               className="px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 bg-gray-50 hover:bg-white transition"
               placeholder="Destination (e.g. Pune)"
               value={destination}
@@ -173,7 +213,7 @@ import './App.css'
 
                       <ul className="space-y-3">
                         {list.map((r, idx) => (
-                          <li key={idx} className="flex items-center justify-between p-4 bg-white rounded-lg shadow hover:shadow-md transition border border-gray-100">
+                          <li key={idx} onClick={() => handleBusClick(platformKey)} className="flex items-center justify-between p-4 bg-white rounded-lg shadow hover:shadow-md transition border border-gray-100 cursor-pointer hover:bg-sky-50">
                             <div>
                               <div className="font-bold text-gray-900">{r.operator || r.source || 'Unknown'}</div>
                               <div className="text-sm text-gray-600 mt-1">🕐 {r.departure} → {r.arrival} • ⏱️ {r.duration || 'N/A'}</div>
