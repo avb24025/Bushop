@@ -1,49 +1,43 @@
 import redbus from '../scrapers/redbus.js';
 import abhibus from '../scrapers/abhibus.js';
-import travelyaari from '../scrapers/travelyaari.js';
 import scrapeIxigo from '../scrapers/ixigo.js';
 
 export default async function busController(req, res) {
-    // Use body params if available, otherwise fallback to testArgs
-    const source = req.body.source || 'khed';
+    const source = req.body.source || 'Khed';
     const destination = req.body.destination || 'Pune';
     const date = req.body.date || '15 February 2026';
 
-    console.log(`Searching for: ${source} to ${destination} on ${date}`);
+    console.log(`🔍 Global Search: ${source} to ${destination} on ${date}`);
 
-    // Define helper to run scraper safely
+    // This helper ensures that if ONE scraper fails, it returns [] 
+    // instead of throwing an error that stops the other scrapers.
     const runScraper = async (scraperFn, name, ...args) => {
         try {
-            console.log(`Starting ${name} scraper...`);
-            return await scraperFn(...args);
+            console.log(`🚀 [${name}] started...`);
+            const results = await scraperFn(...args);
+            console.log(`✅ [${name}] found ${results ? results.length : 0} buses.`);
+            return Array.isArray(results) ? results : []; 
         } catch (error) {
-            console.error(`❌ ${name} Scraper Error:`, error.message);
-            return []; // Return empty array on failure so logic continues
+            console.error(`❌ [${name}] failed:`, error.message);
+            return []; // Fail gracefully with empty results
         }
     };
 
-    // Execute scrapers in parallel but handle errors individually
-    const [redbusResults, abhibusResults, scrapeIxigoResults] = await Promise.all([
+    // Parallel Execution
+    const [redbusResults, abhibusResults, ixigoResults] = await Promise.all([
         runScraper(redbus, 'RedBus', source, destination, date),
         runScraper(abhibus, 'AbhiBus', source, destination, date),
         runScraper(scrapeIxigo, 'Ixigo', source, destination, date)
     ]);
 
-    // Store categorized by platform
     const categorizedBuses = {
         redbus: redbusResults,
         abhibus: abhibusResults,
-        ixigo: scrapeIxigoResults,
-        // travelyaari: [],
-        // zingbus: []
+        ixigo: ixigoResults
     };
 
-    // Create a combined flat list for easy UI rendering
-    const allBuses = [...redbusResults, ...abhibusResults, ...scrapeIxigoResults];
+    const allBuses = [...redbusResults, ...abhibusResults, ...ixigoResults];
 
-    console.log(`Results: RedBus(${redbusResults.length}), AbhiBus(${abhibusResults.length}), Ixigo(${scrapeIxigoResults.length})`);
-
-    // Return both grouped and flat data
     res.json({
         success: true,
         summary: {
@@ -51,10 +45,10 @@ export default async function busController(req, res) {
             platforms: {
                 redbus: redbusResults.length,
                 abhibus: abhibusResults.length,
-                ixigo: scrapeIxigoResults.length
+                ixigo: ixigoResults.length
             }
         },
-        data: categorizedBuses, // Organized by platform
-        combined: allBuses      // Flat list for sorting/filtering
+        data: categorizedBuses,
+        combined: allBuses
     });
 }

@@ -16,12 +16,36 @@ async function scrapeRedBus(fromCity, toCity, travelDate) {
             '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
         ]
      }); 
-    const context = await browser.newContext();
+    const context = await browser.newContext({
+        // 1. HARDCODE a real, modern User-Agent
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        viewport: { width: 1280, height: 800 },
+        // 2. Set the platform to Win32 explicitly
+        extraHTTPHeaders: {
+            'accept-language': 'en-US,en;q=0.9',
+        }
+    });
     const page = await context.newPage();
+
+    await page.setExtraHTTPHeaders({
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1'
+        });
 
     try {
         console.log("🚀 Starting RedBus Scraper...");
-        await page.goto('https://www.redbus.in/', { waitUntil: 'networkidle' });
+
+        await page.route('**/*.{png,jpg,jpeg,gif,svg,css}', (route) => route.abort());
+        await page.route('**/google-analytics.com/**', (route) => route.abort());
+
+        await page.goto('https://www.redbus.in/', { 
+            waitUntil: 'domcontentloaded', // 'networkidle' is too slow for RedBus
+            timeout: 60000 
+        });
+
+        await page.waitForTimeout(Math.floor(Math.random() * 2000) + 1000);
 
         // 1. Origin Selection
         console.log(`Setting origin: ${fromCity}`);
@@ -111,10 +135,13 @@ async function scrapeRedBus(fromCity, toCity, travelDate) {
         return busResults;
 
     } catch (err) {
-        console.error("❌ Scraper Error:", err);
-        return [];
+        console.error("⚠️ RedBus Scraper non-fatal error:", err.message);
+        return []; // Always return array
     } finally {
-        await browser.close();
+        if (browser) {
+            // This is the "Magic" fix: catch the error that occurs during close
+            await browser.close().catch(err => console.log("Cleanup handled."));
+        }
     }
 }
 
