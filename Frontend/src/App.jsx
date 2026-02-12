@@ -71,7 +71,7 @@ import './App.css'
     setResults(null)
 
     try {
-      const backendURL =  'http://localhost:5000'
+      const backendURL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'
       const res = await fetch(`${backendURL}/api/bus`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

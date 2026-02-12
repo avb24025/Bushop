@@ -6,16 +6,16 @@ chromium.use(stealth());
 
 async function scrapeAbhiBus(fromCity, toCity, travelDate) {
     const browser = await chromium.launch({ 
-        headless: true, // No window pops up
-        args: [
-            '--disable-blink-features=AutomationControlled', // Extra stealth
-            '--no-sandbox', 
-            '--disable-setuid-sandbox',
-            '--disable-http2',
-            '--disable-blink-features=AutomationControlled',
-            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
-        ]
-     });
+    headless: true,
+    args: [
+        '--no-sandbox', 
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',      // CRITICAL: Prevents crashes in Docker
+        '--disable-gpu',                // Docker environments usually don't have GPUs
+        '--disable-blink-features=AutomationControlled',
+        '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+    ]
+});
     const context = await browser.newContext({
         viewport: { width: 1280, height: 800 }
     });

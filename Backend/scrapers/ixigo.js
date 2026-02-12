@@ -78,18 +78,16 @@ async function closeIxigoModal(page) {
 }
 
 async function scrapeIxigo(fromCity, toCity, travelDate) {
-  const browser = await chromium.launch({
-    headless: true,
+  const browser = await chromium.launch({ 
+    headless: true, 
     args: [
-      "--disable-blink-features=AutomationControlled",
-      "--no-sandbox",
-      "--disable-http2",
-      "--disable-dev-shm-usage",
-      "--disable-gpu",
-      "--window-size=1280,720",
-      "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-    ],
-  });
+        '--no-sandbox', 
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage', // FIXES: "Target Closed" errors in Docker
+        '--disable-gpu',
+        '--disable-blink-features=AutomationControlled'
+    ] 
+});
 
   const context = await browser.newContext({
     viewport: { width: 1280, height: 720 },

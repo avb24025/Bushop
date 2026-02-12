@@ -6,16 +6,15 @@ chromium.use(stealth());
 
 async function scrapeRedBus(fromCity, toCity, travelDate) {
     const browser = await chromium.launch({ 
-        headless: true, // No window pops up
-        args: [
-            '--disable-blink-features=AutomationControlled', // Extra stealth
-            '--no-sandbox', 
-            '--disable-setuid-sandbox',
-            '--disable-http2',
-            '--disable-blink-features=AutomationControlled',
-            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
-        ]
-     }); 
+    headless: true, 
+    args: [
+        '--no-sandbox', 
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage', // FIXES: "Target Closed" errors in Docker
+        '--disable-gpu',
+        '--disable-blink-features=AutomationControlled'
+    ] 
+});
     const context = await browser.newContext({
         // 1. HARDCODE a real, modern User-Agent
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
